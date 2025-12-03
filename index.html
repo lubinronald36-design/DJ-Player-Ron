@@ -111,71 +111,90 @@
 <div id="playlist"></div>
 
 <script>
-    // 🎵 Add your MP3 files here
-    const playlist = [
-        "recording3_.mp3",
-        "god.mp3"
-    ];
+const playlist = ["ton.mp3", "god.mp3"];
 
-    let index = 0;
-    const player = document.getElementById("player");
-    const listBox = document.getElementById("playlist");
-    const info = document.getElementById("info");
-    const volumeSlider = document.getElementById("volume");
+let index = 0;
+let activePlayer = "A";
 
-    // Create playlist UI
-    function renderPlaylist() {
-        listBox.innerHTML = "";
-        playlist.forEach((song, i) => {
-            const div = document.createElement("div");
-            div.textContent = song;
-            div.className = "song" + (i === index ? " active" : "");
-            div.onclick = () => {
-                index = i;
-                loadSong();
-            };
-            listBox.appendChild(div);
-        });
-    }
+const playerA = new Audio();
+const playerB = new Audio();
 
-    // Load and play a song
-    function loadSong() {
-        player.src = playlist[index];
-        player.play();
-        info.textContent = "Playing: " + playlist[index];
-        renderPlaylist();
-    }
+playerA.volume = 1;
+playerB.volume = 0;
 
-    function playPause() {
-        if (player.paused) {
-            player.play();
-        } else {
-            player.pause();
+playerA.src = playlist[0];
+playerB.src = playlist[1];
+
+function play() {
+    if (activePlayer === "A") playerA.play();
+    else playerB.play();
+}
+
+function nextSong() {
+    let oldPlayer = activePlayer === "A" ? playerA : playerB;
+    let newPlayer = activePlayer === "A" ? playerB : playerA;
+
+    index = (index + 1) % playlist.length;
+
+    newPlayer.src = playlist[index];
+    newPlayer.volume = 0;
+    newPlayer.play();
+
+    // CROSSFADE 2 SECONDS
+    let fade = setInterval(() => {
+        oldPlayer.volume -= 0.05;
+        newPlayer.volume += 0.05;
+
+        if (newPlayer.volume >= 1) {
+            clearInterval(fade);
+            oldPlayer.pause();
         }
-    }
+    }, 100);
 
-    function nextSong() {
-        index = (index + 1) % playlist.length;
-        loadSong();
-    }
+    activePlayer = activePlayer === "A" ? "B" : "A";
 
-    function prevSong() {
-        index = (index - 1 + playlist.length) % playlist.length;
-        loadSong();
-    }
+    document.getElementById("info").textContent =
+        "Mixing into: " + playlist[index];
 
-    // Auto-play next song
-    player.onended = nextSong;
-
-    // Volume control
-    volumeSlider.oninput = () => {
-        player.volume = volumeSlider.value;
-    };
-
-    // Start
     renderPlaylist();
-    loadSong();
-</script>
+}
 
+function prevSong() {
+    index = (index - 1 + playlist.length) % playlist.length;
+    playerA.src = playlist[index];
+    playerA.play();
+    activePlayer = "A";
+    renderPlaylist();
+}
+
+function playPause() {
+    if (activePlayer === "A") {
+        if (playerA.paused) playerA.play(); else playerA.pause();
+    } else {
+        if (playerB.paused) playerB.play(); else playerB.pause();
+    }
+}
+
+function renderPlaylist() {
+    const listBox = document.getElementById("playlist");
+    listBox.innerHTML = "";
+    playlist.forEach((song, i) => {
+        const div = document.createElement("div");
+        div.textContent = song;
+        div.className = "song" + (i === index ? " active" : "");
+        div.onclick = () => {
+            index = i;
+            playerA.src = playlist[index];
+            playerA.play();
+            activePlayer = "A";
+            renderPlaylist();
+        };
+        listBox.appendChild(div);
+    });
+}
+
+renderPlaylist();
+play();
+</script>
 </body>
 </html>
