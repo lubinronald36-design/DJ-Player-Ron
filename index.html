@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>DJ Player Pro</title>
+
+<style>
+    body {
+        margin: 0;
+        background: linear-gradient(135deg, #0d0d0d, #222);
+        color: #fff;
+        font-family: Arial, Helvetica, sans-serif;
+        text-align: center;
+        padding: 20px;
+    }
+
+    h1 {
+        margin-top: 20px;
+        font-size: 40px;
+        letter-spacing: 2px;
+        text-shadow: 0px 0px 10px #00eaff;
+    }
+
+    #player-box {
+        margin: 30px auto;
+        padding: 20px;
+        width: 350px;
+        background: #111;
+        border-radius: 15px;
+        box-shadow: 0px 0px 20px #00eaff77;
+    }
+
+    button {
+        border: none;
+        padding: 12px 25px;
+        margin: 10px;
+        font-size: 18px;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: 0.2s;
+        background: #00eaff;
+        color: #000;
+        font-weight: bold;
+    }
+
+    button:hover {
+        transform: scale(1.1);
+        background: #00bcd4;
+    }
+
+    #playlist {
+        margin-top: 20px;
+        text-align: left;
+        max-width: 350px;
+        margin-left: auto;
+        margin-right: auto;
+        background: #00000044;
+        border-radius: 10px;
+        padding: 10px;
+    }
+
+    .song {
+        padding: 8px;
+        cursor: pointer;
+        border-bottom: 1px solid #444;
+    }
+
+    .song:hover {
+        background: #222;
+    }
+
+    .active {
+        background: #00eaff44;
+        font-weight: bold;
+    }
+
+    #volume-box {
+        margin-top: 20px;
+    }
+
+    #info {
+        margin-top: 20px;
+        font-size: 22px;
+        text-shadow: 0px 0px 5px #00eaff;
+    }
+</style>
+</head>
+<body>
+
+<h1>🎧 DJ Player Pro</h1>
+
+<div id="player-box">
+    <audio id="player"></audio>
+
+    <div>
+        <button onclick="prevSong()">⏮️ Prev</button>
+        <button onclick="playPause()">▶️ Play / ⏸️ Pause</button>
+        <button onclick="nextSong()">⏭️ Next</button>
+    </div>
+
+    <div id="volume-box">
+        <label>🔊 Volume: </label>
+        <input type="range" id="volume" min="0" max="1" step="0.01" value="1">
+    </div>
+
+    <div id="info">Loading...</div>
+</div>
+
+<h2>Playlist</h2>
+<div id="playlist"></div>
+
+<script>
+    // 🎵 Add your MP3 files here
+    const playlist = [
+        "Recording3_.mp3",
+        "god.mp3"
+    ];
+
+    let index = 0;
+    const player = document.getElementById("player");
+    const listBox = document.getElementById("playlist");
+    const info = document.getElementById("info");
+    const volumeSlider = document.getElementById("volume");
+
+    // Create playlist UI
+    function renderPlaylist() {
+        listBox.innerHTML = "";
+        playlist.forEach((song, i) => {
+            const div = document.createElement("div");
+            div.textContent = song;
+            div.className = "song" + (i === index ? " active" : "");
+            div.onclick = () => {
+                index = i;
+                loadSong();
+            };
+            listBox.appendChild(div);
+        });
+    }
+
+    // Load and play a song
+    function loadSong() {
+        player.src = playlist[index];
+        player.play();
+        info.textContent = "Playing: " + playlist[index];
+        renderPlaylist();
+    }
+
+    function playPause() {
+        if (player.paused) {
+            player.play();
+        } else {
+            player.pause();
+        }
+    }
+
+    function nextSong() {
+        index = (index + 1) % playlist.length;
+        loadSong();
+    }
+
+    function prevSong() {
+        index = (index - 1 + playlist.length) % playlist.length;
+        loadSong();
+    }
+
+    // Auto-play next song
+    player.onended = nextSong;
+
+    // Volume control
+    volumeSlider.oninput = () => {
+        player.volume = volumeSlider.value;
+    };
+
+    // Start
+    renderPlaylist();
+    loadSong();
+</script>
+
+</body>
+</html>
