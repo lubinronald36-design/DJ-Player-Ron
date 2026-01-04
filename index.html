@@ -4,77 +4,102 @@
 <meta charset="UTF-8">
 <title>Multi Track Controller</title>
 <style>
-    body {
-        background: #000;
-        color: #fff;
-        font-family: Arial;
-        text-align: center;
-        padding: 20px;
-    }
-    .track-box {
-        background: #111;
-        padding: 15px;
-        margin: 10px auto;
-        width: 300px;
-        border-radius: 10px;
-        box-shadow: 0 0 10px #555;
-    }
-    button {
-        padding: 8px 20px;
-        margin: 5px;
-        font-size: 16px;
-    }
-    input[type=range] {
-        width: 90%;
-    }
+  body { background:#000; color:#fff; font-family:Arial; text-align:center; padding:20px; }
+  .track-box { background:#111; padding:15px; margin:10px auto; width:320px; border-radius:10px; box-shadow:0 0 10px #555; }
+  button { padding:8px 20px; margin:5px; font-size:16px; cursor:pointer; }
+  input[type=range]{ width:90%; }
+  .status{ font-size:13px; margin-top:8px; opacity:.95; }
 </style>
 </head>
 <body>
 
 <h1>Multi Track Music Controller</h1>
+<p style="opacity:.8;font-size:14px;margin-top:-6px;">
+  Put <b>ton.mp3</b> in the SAME folder as this HTML (exact name: <b>ton.mp3</b>)
+</p>
 
 <!-- TRACK 1 -->
 <div class="track-box">
-    <h3>Track 1 – ton.mp3</h3>
-    <audio id="t1" src="ton.mp3"></audio>
-    <button onclick="t1.play()">Play</button>
-    <button onclick="t1.pause()">Pause</button><br><br>
-    Volume:
-    <input type="range" min="0" max="1" step="0.01" onchange="t1.volume=this.value">
+  <h3>Track 1 – ton.mp3</h3>
+  <audio id="t1" src="./ton.mp3" preload="auto"></audio>
+
+  <button id="play1">Play</button>
+  <button onclick="t1.pause()">Pause</button>
+  <button onclick="stopTrack(t1)">Stop</button><br><br>
+
+  Volume:
+  <input type="range" min="0" max="1" step="0.01" value="1" oninput="t1.volume=this.value">
+
+  <div class="status" id="s1">Status: waiting…</div>
 </div>
 
 <!-- TRACK 2 -->
 <div class="track-box">
-    <h3>Track 2 – god.mp3</h3>
-    <audio id="t2" src="god.mp3"></audio>
-    <button onclick="t2.play()">Play</button>
-    <button onclick="t2.pause()">Pause</button><br><br>
-    Volume:
-    <input type="range" min="0" max="1" step="0.01" onchange="t2.volume=this.value">
+  <h3>Track 2 – god.mp3</h3>
+  <audio id="t2" src="./god.mp3" preload="auto"></audio>
+  <button onclick="safePlay(t2, s2)">Play</button>
+  <button onclick="t2.pause()">Pause</button>
+  <button onclick="stopTrack(t2)">Stop</button><br><br>
+  Volume:
+  <input type="range" min="0" max="1" step="0.01" value="1" oninput="t2.volume=this.value">
+  <div class="status" id="s2">Status: waiting…</div>
 </div>
 
 <!-- TRACK 3 -->
 <div class="track-box">
-    <h3>Track 3 – myvoice.mp3</h3>
-    <audio id="t3" src="myvoice.mp3"></audio>
-    <button onclick="t3.play()">Play</button>
-    <button onclick="t3.pause()">Pause</button><br><br>
-    Volume:
-    <input type="range" min="0" max="1" step="0.01" onchange="t3.volume=this.value">
+  <h3>Track 3 – myvoice.mp3</h3>
+  <audio id="t3" src="./myvoice.mp3" preload="auto"></audio>
+  <button onclick="safePlay(t3, s3)">Play</button>
+  <button onclick="t3.pause()">Pause</button>
+  <button onclick="stopTrack(t3)">Stop</button><br><br>
+  Volume:
+  <input type="range" min="0" max="1" step="0.01" value="1" oninput="t3.volume=this.value">
+  <div class="status" id="s3">Status: waiting…</div>
 </div>
 
 <!-- PLAY ALL -->
 <div class="track-box" style="background:#222;">
-    <h3>All Tracks Together</h3>
-    <button onclick="t1.play(); t2.play(); t3.play();">Play All</button>
-    <button onclick="t1.pause(); t2.pause(); t3.pause();">Pause All</button>
+  <h3>All Tracks Together</h3>
+  <button onclick="safePlay(t1, s1); safePlay(t2, s2); safePlay(t3, s3);">Play All</button>
+  <button onclick="t1.pause(); t2.pause(); t3.pause();">Pause All</button>
+  <button onclick="stopTrack(t1); stopTrack(t2); stopTrack(t3);">Stop All</button>
+  <div class="status" style="opacity:.8">Tip: If play is blocked, click once on the page, then press Play again.</div>
 </div>
 
 <script>
-    const t1 = document.getElementById('t1');
-    const t2 = document.getElementById('t2');
-    const t3 = document.getElementById('t3');
+  const t1 = document.getElementById('t1');
+  const t2 = document.getElementById('t2');
+  const t3 = document.getElementById('t3');
+
+  const s1 = document.getElementById('s1');
+  const s2 = document.getElementById('s2');
+  const s3 = document.getElementById('s3');
+
+  function setStatus(el, ok, msg){
+    el.textContent = msg;
+    el.style.color = ok ? "#6dff6d" : "#ff6d6d";
+  }
+
+  function safePlay(audio, statusEl){
+    audio.play().then(() => {
+      setStatus(statusEl, true, "Playing ✅");
+    }).catch(() => {
+      setStatus(statusEl, false, "ERROR: file missing OR browser blocked play. Check exact filename + same folder.");
+    });
+  }
+
+  function stopTrack(a){
+    a.pause();
+    a.currentTime = 0;
+  }
+
+  // Track 1: uses a real JS click handler (more reliable than inline)
+  document.getElementById('play1').addEventListener('click', () => safePlay(t1, s1));
+
+  // Show “file not found” clearly
+  t1.addEventListener('error', () => setStatus(s1, false, "ERROR: cannot load ./ton.mp3 — check exact name (no spaces, no (1))"));
 </script>
 
 </body>
 </html>
+
